@@ -1,4 +1,5 @@
-﻿using bookStore.Models;
+﻿using bookStore.Database;
+using bookStore.Models;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -9,12 +10,26 @@ namespace bookStore.Controllers
 {
     public class ProductsController : Controller
     {
+        private readonly AppDbContext _dbContext;
+        public ProductsController(AppDbContext dbContext)
+        {
+            _dbContext = dbContext;
+        }
         public IActionResult Index()
         {
             return View();
         }
-        public IActionResult Add(ProductModel product)
+        public async Task<IActionResult> Add(ProductModel product)
         {
+            var entity = new ProductEntity
+            {
+                Name = product.Name,
+                Description = product.Description,
+                IsVisible = product.IsVisible,
+            };
+            await _dbContext.Products.AddAsync(entity);
+            await _dbContext.SaveChangesAsync();
+
             var viewModel = new ProductsStatsViewModel
             {
                 NameLength = product.Name.Length,
